@@ -9,6 +9,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Create a single supabase client for interacting with your database
 export const supabase = createClient(
-    supabaseUrl || 'https://placeholder-url.supabase.co',
-    supabaseAnonKey || 'placeholder-anon-key'
+    supabaseUrl || 'https://sixgdsqjesrhllfhvvnn.supabase.co',
+    supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpeGdkc3FqZXNyaGxsZmh2dm5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODM2MDcsImV4cCI6MjEwNDM1OTYwN30.M-NpJXPRDQiZNfBmyc7KXu9dSXVRz54dNPDnwsTL1B8'
 );

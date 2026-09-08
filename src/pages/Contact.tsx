@@ -33,7 +33,12 @@ const Contact = () => {
             setEmail('');
             setMessage('');
         } catch (error: any) {
-            setStatusText('Failed to send message: ' + error.message);
+            console.error('Error sending message:', error);
+            if (error.message === 'Failed to fetch' || error.message.includes('fetch')) {
+                setStatusText('Unable to connect to the server. Please check your internet connection and try again later.');
+            } else {
+                setStatusText('Failed to send message: ' + error.message);
+            }
         }
         setSubmitting(false);
     };
