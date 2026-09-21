@@ -22,7 +22,7 @@ export const AdminUsers = () => {
                 console.error("Function error details:", error);
 
                 // Fallback attempt: Fetch raw if invoke obfuscates it
-                const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL || 'https://sixgdsqjesrhllfhvvnn.supabase.co'}/functions/v1/create-user`, {
+                const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL || 'https://tbyurzbdjgcomzcpuprv.supabase.co'}/functions/v1/create-user`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
