@@ -25,13 +25,37 @@ export const deleteData = async (table: string, id: string) => {
 };
 
 export const uploadFile = async (bucket: string, file: File) => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    // Step 1: Check File Size (Supabase or mobile connections often fail silently for very large files)
+    const MAX_MB = 10; // 10MB limit
+    if (file.size > MAX_MB * 1024 * 1024) {
+        throw new Error(`The image is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please choose an image smaller than ${MAX_MB}MB.`);
+    }
 
-    const { error } = await supabase.storage.from(bucket).upload(filePath, file);
-    if (error) throw error;
+    // Step 2: Ensure a clean, safe filename structure (mobile devices sometimes give weird names or emojis)
+    const originalName = file.name || 'mobile_upload.jpg';
+    const fileExt = originalName.includes('.') ? originalName.split('.').pop()?.toLowerCase() : 'jpg';
 
-    const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-    return data.publicUrl;
+    // Create a guaranteed unique, URL-safe filename using timestamp + random string
+    const safeRandom = Math.random().toString(36).substring(2, 9);
+    const fileName = `${Date.now()}-${safeRandom}.${fileExt}`;
+
+    // Step 3: Upload with specific content options
+    const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+        });
+
+    if (uploadError) {
+        console.error("Storage upload error details:", uploadError);
+        throw new Error(uploadError.message || 'Failed to upload to storage bucket.');
+    }
+
+    // Step 4: Get and return the public URL
+    const { data: publicUrlData } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(fileName);
+
+    return publicUrlData.publicUrl;
 };
