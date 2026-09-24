@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Routes, Route, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Image, Bell, Users, LogOut, Shield, Calendar, Mail, Settings, Home as HomeIcon, Book } from 'lucide-react';
+import { LayoutDashboard, Image, Bell, Users, LogOut, Shield, Calendar, Mail, Settings, Home as HomeIcon, Book, Menu, X } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { GenericCrud } from './admin/GenericCrud';
@@ -10,6 +10,7 @@ import { AdminMessages } from './admin/AdminMessages';
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const { session, profile, loading } = useAuth();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (!loading && (!session || profile?.role !== 'ADMIN' || profile?.status !== 'ACTIVE')) {
@@ -35,21 +36,44 @@ const AdminDashboard = () => {
     ];
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-main)' }}>
-            <aside style={{ width: '280px', background: 'var(--surface)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '24px', borderBottom: '1px solid var(--border)' }}>
+        <div className="admin-layout">
+            {/* Sidebar Overlay for Mobile */}
+            <div
+                className={`admin-sidebar-overlay ${sidebarOpen ? 'open' : ''}`}
+                onClick={() => setSidebarOpen(false)}
+            />
+
+            <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
+                <div style={{ padding: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h2 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}><Shield size={24} color="var(--primary)" /> CSI Admin</h2>
+                    {/* Close button on mobile */}
+                    <button className="menu-toggle" onClick={() => setSidebarOpen(false)} style={{ display: 'block', padding: '4px' }}>
+                        <X size={24} />
+                    </button>
                 </div>
-                <nav style={{ flex: 1, padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <nav style={{ flex: 1, padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
                     {navItems.map((item, idx) => (
-                        <Link key={idx} to={`/admin/dashboard/${item.path}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '8px', color: 'var(--text-main)' }}>{item.icon}{item.name}</Link>
+                        <Link
+                            key={idx}
+                            to={`/admin/dashboard/${item.path}`}
+                            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '8px', color: 'var(--text-main)' }}
+                            onClick={() => setSidebarOpen(false)}
+                        >
+                            {item.icon}{item.name}
+                        </Link>
                     ))}
                 </nav>
                 <div style={{ padding: '24px', borderTop: '1px solid var(--border)' }}>
                     <button onClick={async () => { await supabase.auth.signOut(); navigate('/admin'); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}><LogOut size={20} /> Logout</button>
                 </div>
             </aside>
-            <main style={{ flex: 1, padding: '48px', overflowY: 'auto' }}>
+            <main className="admin-main">
+                <div className="admin-mobile-header">
+                    <h2 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}><Shield size={24} color="var(--primary)" /> CSI Admin</h2>
+                    <button className="menu-toggle" onClick={() => setSidebarOpen(true)} style={{ display: 'block' }}>
+                        <Menu size={24} />
+                    </button>
+                </div>
                 <Routes>
                     <Route path="/" element={<h2>Dashboard Overview - Real Supabase Connected</h2>} />
                     <Route path="users" element={<AdminUsers />} />
