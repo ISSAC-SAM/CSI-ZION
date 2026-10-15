@@ -26,6 +26,8 @@ const Navbar = () => {
         { name: t('gallery'), path: '/gallery' },
         { name: t('events'), path: '/events' },
         { name: t('sundayClass'), path: '/sunday-school' },
+        { name: t('womenFellowship'), path: '/women-fellowship' },
+        { name: t('youthFellowship'), path: '/youth-fellowship' },
         { name: t('churchMembers'), path: '/church-members' },
         { name: t('contact'), path: '/contact' }
     ];

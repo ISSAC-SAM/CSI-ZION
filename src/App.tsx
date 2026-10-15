@@ -5,6 +5,8 @@ import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import Events from './pages/Events';
 import SundaySchool from './pages/SundaySchool';
+import WomenFellowship from './pages/WomenFellowship';
+import YouthFellowship from './pages/YouthFellowship';
 import ChurchMembers from './pages/ChurchMembers';
 import Contact from './pages/Contact';
 import AdminLogin from './pages/AdminLogin';
@@ -35,6 +37,8 @@ function App() {
                   <Route path="/gallery" element={<Gallery />} />
                   <Route path="/events" element={<Events />} />
                   <Route path="/sunday-school" element={<SundaySchool />} />
+                  <Route path="/women-fellowship" element={<WomenFellowship />} />
+                  <Route path="/youth-fellowship" element={<YouthFellowship />} />
                   <Route path="/church-members" element={<ChurchMembers />} />
                   <Route path="/contact" element={<Contact />} />
                 </Routes>
