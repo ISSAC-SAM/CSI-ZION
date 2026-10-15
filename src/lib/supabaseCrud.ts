@@ -40,7 +40,7 @@ export const uploadFile = async (bucket: string, file: File) => {
     const fileName = `${Date.now()}-${safeRandom}.${fileExt}`;
 
     // Step 3: Upload with specific content options
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: _uploadData, error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(fileName, file, {
             cacheControl: '3600',
