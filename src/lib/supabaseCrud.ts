@@ -25,34 +25,62 @@ export const deleteData = async (table: string, id: string) => {
 };
 
 export const uploadFile = async (bucket: string, file: File) => {
-    // Step 1: Check File Size (Supabase or mobile connections often fail silently for very large files)
-    const MAX_MB = 10; // 10MB limit
+    // Step 1: File size check — 10MB limit
+    const MAX_MB = 10;
     if (file.size > MAX_MB * 1024 * 1024) {
-        throw new Error(`The image is too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Please choose an image smaller than ${MAX_MB}MB.`);
+        throw new Error(
+            `Image too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). ` +
+            `Please choose an image smaller than ${MAX_MB} MB.`
+        );
     }
 
-    // Step 2: Ensure a clean, safe filename structure (mobile devices sometimes give weird names or emojis)
+    // Step 2: Resolve MIME type explicitly.
+    // Mobile browsers (especially iOS Safari) sometimes report file.type as ''
+    // for HEIC/HEIF images. We detect by extension as a fallback.
     const originalName = file.name || 'mobile_upload.jpg';
-    const fileExt = originalName.includes('.') ? originalName.split('.').pop()?.toLowerCase() : 'jpg';
+    const rawExt = originalName.includes('.')
+        ? originalName.split('.').pop()?.toLowerCase() ?? 'jpg'
+        : 'jpg';
 
-    // Create a guaranteed unique, URL-safe filename using timestamp + random string
+    // Map MIME type: prefer file.type, fall back to extension-based lookup
+    const extToMime: Record<string, string> = {
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+        gif: 'image/gif',
+        heic: 'image/heic',
+        heif: 'image/heif',
+        bmp: 'image/bmp',
+        pdf: 'application/pdf',
+    };
+    const contentType = file.type || extToMime[rawExt] || 'image/jpeg';
+
+    // Use 'jpg' extension for HEIC/HEIF so URLs render in browsers without native HEIC support
+    const storageExt = ['heic', 'heif'].includes(rawExt) ? 'jpg' : rawExt;
+
+    // Step 3: Build a safe, unique filename
     const safeRandom = Math.random().toString(36).substring(2, 9);
-    const fileName = `${Date.now()}-${safeRandom}.${fileExt}`;
+    const fileName = `${Date.now()}-${safeRandom}.${storageExt}`;
 
-    // Step 3: Upload with specific content options
-    const { data: _uploadData, error: uploadError } = await supabase.storage
+    // Step 4: Upload — explicitly pass contentType so Supabase doesn't guess
+    const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(fileName, file, {
             cacheControl: '3600',
-            upsert: false
+            upsert: false,
+            contentType,          // ← KEY FIX: prevents silent rejection of HEIC/WebP on mobile
         });
 
     if (uploadError) {
-        console.error("Storage upload error details:", uploadError);
-        throw new Error(uploadError.message || 'Failed to upload to storage bucket.');
+        console.error('Supabase storage upload error:', uploadError);
+        throw new Error(
+            uploadError.message ||
+            'Upload failed. Check your internet connection and try again.'
+        );
     }
 
-    // Step 4: Get and return the public URL
+    // Step 5: Return the public URL
     const { data: publicUrlData } = supabase.storage
         .from(bucket)
         .getPublicUrl(fileName);
